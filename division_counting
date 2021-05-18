@@ -1,0 +1,58 @@
+import numpy as np
+import networkx as nx
+
+def createGrid(m,n):
+
+    grid = nx.Graph()
+
+    for i in range(m*n):
+        grid.add_node(i)
+
+    for node1 in grid.nodes():
+        for node2 in grid.nodes():
+            if node1 + 1 == node2 and node2 % n != 0:
+                grid.add_edge(node1,node2)
+            if node1 + n == node2:
+                grid.add_edge(node1,node2)
+                
+    return grid
+   
+def createStrings(grid):
+    a=len(grid.edges())
+    strings=[str(bin(x))[2:] for x in range(2**(a))]
+    for i in range(len(strings)):
+      for x in range(a-len(strings[i])):
+        strings[i]='0'+strings[i]
+    return strings
+
+def checkValid_V2(grid, removedEdges):
+    components = list(nx.connected_components(grid))
+    valid = True
+    for edge in removedEdges:
+        node1 = edge[0]
+        node2 = edge[1]
+        for comp in components:
+            if node1 in comp and node2 in comp:
+                valid=False
+    return valid
+
+def countDivisions_V2(m,n):
+    divisions={}
+    grid = createGrid(m,n)
+    for i in range(1,m*n+1):
+        divisions[i]=0
+    strings = createStrings(grid)
+    for s in strings:
+        grid = createGrid(m,n)
+        removedEdges=[]
+        edgelist=list(grid.edges())
+        for i in range(len(s)):
+            if s[i]=='1':
+                edge=edgelist[i]
+                grid.remove_edge(edge[0],edge[1])
+                removedEdges.append(edge)
+        if checkValid_V2(grid,removedEdges):
+            pieces = nx.number_connected_components(grid)
+            divisions[pieces]+=1
+    return divisions
+
